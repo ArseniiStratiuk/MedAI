@@ -1,0 +1,115 @@
+{
+  "id": "RPT-3A378B23",
+  "encounter_id": "ENC-MOCK",
+  "patient_id": "PT-API-001",
+  "diagnosis": "Community-acquired pneumonia (CAP), likely bacterial, right lower lobe",
+  "confidence": 0.87,
+  "confidence_method": "model_self_reported",
+  "evidence_summary": "Mock evidence summary",
+  "timeline_impact": "Patient has no prior history of pneumonia or significant respiratory disease. Last imaging 11 months ago showed clear lungs. Baseline inflammatory markers were normal as of November 2023.",
+  "plan": [
+    "Amoxicillin-clavulanate 875/125mg BID \u00d7 7 days",
+    "Follow-up CXR in 6 weeks",
+    "Consider sputum culture if no improvement in 48h",
+    "Antipyretics PRN for fever"
+  ],
+  "findings": [],
+  "reasoning_trace": [
+    {
+      "step": 1,
+      "thought": "Patient presents with 3-week history of productive cough, fever (38.5\u00b0C), and right-sided chest pain."
+    },
+    {
+      "step": 2,
+      "thought": "Lab values show elevated WBC (14.2k) with left shift and CRP (45mg/L), indicating acute bacterial infection."
+    },
+    {
+      "step": 3,
+      "thought": "Imaging findings of RLL consolidation with air bronchograms combined with clinical presentation strongly suggest community-acquired pneumonia."
+    }
+  ],
+  "specialist_outputs": {
+    "history_search": {
+      "tool": "history_search",
+      "patient_id": "PT-API-001",
+      "relevant_records": [
+        {
+          "date": "2024-03-15T00:00:00",
+          "record_type": "imaging",
+          "summary": "Chest X-ray: clear lung fields bilaterally, normal cardiac silhouette",
+          "similarity_score": 0.87,
+          "clinical_relevance": "Comparison baseline \u2014 current consolidation represents a new acute finding not present 11 months ago"
+        },
+        {
+          "date": "2023-11-20T00:00:00",
+          "record_type": "lab",
+          "summary": "Baseline labs: WBC 7.2k, CRP <5, all within normal limits",
+          "similarity_score": 0.72,
+          "clinical_relevance": "Current WBC 14.2k and CRP 45 represent significant elevation from patient's known baseline values"
+        },
+        {
+          "date": "2025-08-10T00:00:00",
+          "record_type": "encounter",
+          "summary": "Annual physical: no respiratory complaints, lungs clear on auscultation",
+          "similarity_score": 0.61,
+          "clinical_relevance": "No prior respiratory issues documented"
+        }
+      ],
+      "timeline_context": "Patient has no prior history of pneumonia or significant respiratory disease. Last imaging 11 months ago showed clear lungs. Baseline inflammatory markers were normal as of November 2023."
+    },
+    "text_reasoning": {
+      "tool": "text_reasoning",
+      "reasoning_chain": [
+        {
+          "step": 1,
+          "thought": "Patient presents with 3-week history of productive cough, fever (38.5\u00b0C), and right-sided chest pain."
+        },
+        {
+          "step": 2,
+          "thought": "Lab values show elevated WBC (14.2k) with left shift and CRP (45mg/L), indicating acute bacterial infection."
+        },
+        {
+          "step": 3,
+          "thought": "Imaging findings of RLL consolidation with air bronchograms combined with clinical presentation strongly suggest community-acquired pneumonia."
+        }
+      ],
+      "assessment": "Community-acquired pneumonia (CAP), likely bacterial, right lower lobe",
+      "confidence": 0.87,
+      "evidence_citations": [
+        {
+          "source": "patient_history_2024-03-15",
+          "source_type": "patient_history",
+          "relevant_excerpt": "Previous CXR showed clear lung fields, no prior respiratory issues",
+          "date": "2024-03-15T00:00:00"
+        },
+        {
+          "source": "lab_result_2026-02-07",
+          "source_type": "lab_result",
+          "relevant_excerpt": "WBC 14.2k (H), CRP 45 mg/L (H), Procalcitonin 0.8 ng/mL",
+          "date": "2026-02-07T00:00:00"
+        }
+      ],
+      "plan_suggestions": [
+        "Amoxicillin-clavulanate 875/125mg BID \u00d7 7 days",
+        "Follow-up CXR in 6 weeks",
+        "Consider sputum culture if no improvement in 48h",
+        "Antipyretics PRN for fever"
+      ],
+      "contraindication_flags": [],
+      "inference": null
+    }
+  },
+  "judge_verdict": {
+    "verdict": "consensus",
+    "confidence": 0.85,
+    "reasoning": "Mock judge: all specialist outputs are consistent and above confidence threshold.",
+    "contradictions": [],
+    "low_confidence_items": [],
+    "missing_context": [],
+    "requery_tools": []
+  },
+  "approval_status": "pending",
+  "created_at": "2026-02-08T20:28:13.649467",
+  "doctor_notes": null,
+  "pipeline_metrics": null
+}

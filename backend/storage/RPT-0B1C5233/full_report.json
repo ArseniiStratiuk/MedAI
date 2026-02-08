@@ -1,0 +1,223 @@
+{
+  "id": "RPT-0B1C5233",
+  "encounter_id": "ENC-MOCK",
+  "patient_id": "PT-API-002",
+  "diagnosis": "Community-acquired pneumonia (CAP), likely bacterial, right lower lobe",
+  "confidence": 0.87,
+  "confidence_method": "model_self_reported",
+  "evidence_summary": "Mock evidence summary",
+  "timeline_impact": "Patient has no prior history of pneumonia or significant respiratory disease. Last imaging 11 months ago showed clear lungs. Baseline inflammatory markers were normal as of November 2023.",
+  "plan": [
+    "Amoxicillin-clavulanate 875/125mg BID \u00d7 7 days",
+    "Follow-up CXR in 6 weeks",
+    "Consider sputum culture if no improvement in 48h",
+    "Antipyretics PRN for fever"
+  ],
+  "findings": [
+    {
+      "finding": "Right lower lobe consolidation",
+      "confidence": 0.89,
+      "explanation": "Dense opacity in the right lower zone with air bronchograms, consistent with pneumonia. No pleural effusion seen.",
+      "severity": "moderate",
+      "region_bbox": null,
+      "metadata": {}
+    },
+    {
+      "finding": "Mild cardiomegaly",
+      "confidence": 0.72,
+      "explanation": "Cardiothoracic ratio slightly above 0.5, suggesting mild enlargement.",
+      "severity": "mild",
+      "region_bbox": null,
+      "metadata": {}
+    }
+  ],
+  "reasoning_trace": [
+    {
+      "step": 1,
+      "thought": "Patient presents with 3-week history of productive cough, fever (38.5\u00b0C), and right-sided chest pain."
+    },
+    {
+      "step": 2,
+      "thought": "Lab values show elevated WBC (14.2k) with left shift and CRP (45mg/L), indicating acute bacterial infection."
+    },
+    {
+      "step": 3,
+      "thought": "Imaging findings of RLL consolidation with air bronchograms combined with clinical presentation strongly suggest community-acquired pneumonia."
+    }
+  ],
+  "specialist_outputs": {
+    "history_search": {
+      "tool": "history_search",
+      "patient_id": "PT-API-002",
+      "relevant_records": [
+        {
+          "date": "2024-03-15T00:00:00",
+          "record_type": "imaging",
+          "summary": "Chest X-ray: clear lung fields bilaterally, normal cardiac silhouette",
+          "similarity_score": 0.87,
+          "clinical_relevance": "Comparison baseline \u2014 current consolidation represents a new acute finding not present 11 months ago"
+        },
+        {
+          "date": "2023-11-20T00:00:00",
+          "record_type": "lab",
+          "summary": "Baseline labs: WBC 7.2k, CRP <5, all within normal limits",
+          "similarity_score": 0.72,
+          "clinical_relevance": "Current WBC 14.2k and CRP 45 represent significant elevation from patient's known baseline values"
+        },
+        {
+          "date": "2025-08-10T00:00:00",
+          "record_type": "encounter",
+          "summary": "Annual physical: no respiratory complaints, lungs clear on auscultation",
+          "similarity_score": 0.61,
+          "clinical_relevance": "No prior respiratory issues documented"
+        }
+      ],
+      "timeline_context": "Patient has no prior history of pneumonia or significant respiratory disease. Last imaging 11 months ago showed clear lungs. Baseline inflammatory markers were normal as of November 2023."
+    },
+    "text_reasoning": {
+      "tool": "text_reasoning",
+      "reasoning_chain": [
+        {
+          "step": 1,
+          "thought": "Patient presents with 3-week history of productive cough, fever (38.5\u00b0C), and right-sided chest pain."
+        },
+        {
+          "step": 2,
+          "thought": "Lab values show elevated WBC (14.2k) with left shift and CRP (45mg/L), indicating acute bacterial infection."
+        },
+        {
+          "step": 3,
+          "thought": "Imaging findings of RLL consolidation with air bronchograms combined with clinical presentation strongly suggest community-acquired pneumonia."
+        }
+      ],
+      "assessment": "Community-acquired pneumonia (CAP), likely bacterial, right lower lobe",
+      "confidence": 0.87,
+      "evidence_citations": [
+        {
+          "source": "patient_history_2024-03-15",
+          "source_type": "patient_history",
+          "relevant_excerpt": "Previous CXR showed clear lung fields, no prior respiratory issues",
+          "date": "2024-03-15T00:00:00"
+        },
+        {
+          "source": "lab_result_2026-02-07",
+          "source_type": "lab_result",
+          "relevant_excerpt": "WBC 14.2k (H), CRP 45 mg/L (H), Procalcitonin 0.8 ng/mL",
+          "date": "2026-02-07T00:00:00"
+        }
+      ],
+      "plan_suggestions": [
+        "Amoxicillin-clavulanate 875/125mg BID \u00d7 7 days",
+        "Follow-up CXR in 6 weeks",
+        "Consider sputum culture if no improvement in 48h",
+        "Antipyretics PRN for fever"
+      ],
+      "contraindication_flags": [],
+      "inference": null
+    },
+    "image_analysis": {
+      "tool": "image_analysis",
+      "modality_detected": "xray",
+      "findings": [
+        {
+          "finding": "Right lower lobe consolidation",
+          "confidence": 0.89,
+          "explanation": "Dense opacity in the right lower zone with air bronchograms, consistent with pneumonia. No pleural effusion seen.",
+          "severity": "moderate",
+          "region_bbox": null,
+          "metadata": {}
+        },
+        {
+          "finding": "Mild cardiomegaly",
+          "confidence": 0.72,
+          "explanation": "Cardiothoracic ratio slightly above 0.5, suggesting mild enlargement.",
+          "severity": "mild",
+          "region_bbox": null,
+          "metadata": {}
+        }
+      ],
+      "attention_heatmap_url": "/api/v1/artifacts/mock-heatmap-001/heatmap.png",
+      "embedding_id": "emb-img-mock-001",
+      "differential_diagnoses": [
+        "pneumonia",
+        "atelectasis",
+        "pleural_effusion"
+      ],
+      "recommended_followup": [
+        "Lateral CXR",
+        "CBC with differential",
+        "Sputum culture"
+      ],
+      "inference": null
+    },
+    "image_explainability": {
+      "tool": "image_explainability",
+      "modality_detected": "xray",
+      "condition_scores": [
+        {
+          "label": "consolidation consistent with pneumonia",
+          "probability": 0.42,
+          "sigmoid_score": 3.2e-05,
+          "raw_logit": -10.35,
+          "heatmap_data_uri": "/api/v1/artifacts/mock-heatmap-siglip-001/pneumonia.png"
+        },
+        {
+          "label": "cardiomegaly with enlarged heart silhouette",
+          "probability": 0.28,
+          "sigmoid_score": 2.1e-05,
+          "raw_logit": -10.77,
+          "heatmap_data_uri": "/api/v1/artifacts/mock-heatmap-siglip-001/cardiomegaly.png"
+        },
+        {
+          "label": "pleural effusion with blunting of costophrenic angle",
+          "probability": 0.15,
+          "sigmoid_score": 1.1e-05,
+          "raw_logit": -11.42,
+          "heatmap_data_uri": "/api/v1/artifacts/mock-heatmap-siglip-001/effusion.png"
+        },
+        {
+          "label": "normal lung fields with no abnormality",
+          "probability": 0.1,
+          "sigmoid_score": 7.5e-06,
+          "raw_logit": -11.8,
+          "heatmap_data_uri": null
+        },
+        {
+          "label": "pneumothorax with absent lung markings",
+          "probability": 0.05,
+          "sigmoid_score": 3.8e-06,
+          "raw_logit": -12.48,
+          "heatmap_data_uri": null
+        }
+      ],
+      "attention_heatmap_url": "/api/v1/artifacts/mock-heatmap-siglip-001/pneumonia.png",
+      "embedding": [
+        0.012,
+        -0.034,
+        0.056,
+        0.078,
+        -0.091
+      ],
+      "inference": {
+        "model_id": "google/medsiglip-448",
+        "temperature": 0.0,
+        "token_count": 0,
+        "inference_time_ms": 142.3,
+        "sequence_fluency_score": null
+      }
+    }
+  },
+  "judge_verdict": {
+    "verdict": "consensus",
+    "confidence": 0.85,
+    "reasoning": "Mock judge: all specialist outputs are consistent and above confidence threshold.",
+    "contradictions": [],
+    "low_confidence_items": [],
+    "missing_context": [],
+    "requery_tools": []
+  },
+  "approval_status": "pending",
+  "created_at": "2026-02-08T20:58:27.005101",
+  "doctor_notes": null,
+  "pipeline_metrics": null
+}

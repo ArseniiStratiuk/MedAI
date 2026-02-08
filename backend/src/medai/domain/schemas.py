@@ -203,3 +203,31 @@ class AuthResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user: UserResponse
+
+
+# ═══════════════════════════════════════════════════════════════
+#  Transcription (MedASR)
+# ═══════════════════════════════════════════════════════════════
+
+class TranscribeRequest(BaseModel):
+    """Audio sent from the frontend voice button for speech-to-text."""
+    audio_base64: str | None = Field(
+        default=None,
+        description="Base64-encoded audio bytes (WAV/MP3/FLAC/OGG)",
+    )
+    audio_url: str | None = Field(
+        default=None,
+        description="URL to a hosted audio file (alternative to base64)",
+    )
+    language: str = Field(
+        default="en",
+        description="Language hint for the ASR model",
+    )
+
+
+class TranscribeResponse(BaseModel):
+    """Transcription result returned to the frontend."""
+    transcription: str
+    duration_seconds: float = 0.0
+    warning: str | None = None
+    error: str | None = None

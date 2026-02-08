@@ -14,7 +14,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
 from medai import __version__
-from medai.api.routes import health, cases, patients, auth
+from medai.api.routes import health, cases, patients, auth, transcription
 from medai.config import get_settings
 from medai.repositories.database import dispose_db, init_db
 
@@ -77,6 +77,7 @@ def create_app() -> FastAPI:
     app.include_router(auth.router, prefix="/api/v1")
     app.include_router(cases.router, prefix="/api/v1")
     app.include_router(patients.router, prefix="/api/v1")
+    app.include_router(transcription.router, prefix="/api/v1")
 
     return app
 

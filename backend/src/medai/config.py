@@ -75,6 +75,10 @@ class Settings(BaseSettings):
         default="http://localhost:8013",
         description="HeAR audio encoder endpoint",
     )
+    medasr_endpoint: str = Field(
+        default="http://localhost:8014",
+        description="MedASR speech-to-text endpoint",
+    )
 
     # ── SigLIP Explainability ──────────────────────────────
     siglip_taxonomy_path: Path = Field(
