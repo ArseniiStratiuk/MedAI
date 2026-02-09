@@ -129,10 +129,41 @@ export function ChatInput({ onSend, disabled, className, value: externalValue, o
 
   // ── Voice recording ────────────────────────────────────
 
+  const updateText = useCallback(
+    (transcription: string) => {
+      if (isControlled) {
+        const current = externalValue ?? "";
+        const sep = current.trim() ? " " : "";
+        onValueChange?.(current + sep + transcription);
+      } else {
+        setText((prev) => {
+          const sep = prev.trim() ? " " : "";
+          return prev + sep + transcription;
+        });
+      }
+      // Auto-resize textarea
+      setTimeout(() => {
+        if (textareaRef.current) {
+          textareaRef.current.style.height = "auto";
+          textareaRef.current.style.height =
+            Math.min(textareaRef.current.scrollHeight, 160) + "px";
+        }
+      }, 0);
+    },
+    [isControlled, externalValue, onValueChange]
+  );
+
   const startRecording = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+
+      // Prefer audio/webm, fall back to default mimeType
+      const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+        ? "audio/webm;codecs=opus"
+        : MediaRecorder.isTypeSupported("audio/webm")
+          ? "audio/webm"
+          : undefined;
+      const mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
       chunksRef.current = [];
 
       mediaRecorder.ondataavailable = (e) => {
@@ -143,12 +174,12 @@ export function ChatInput({ onSend, disabled, className, value: externalValue, o
         // Stop all tracks to release the mic
         stream.getTracks().forEach((t) => t.stop());
 
-        const blob = new Blob(chunksRef.current, { type: "audio/webm" });
+        const blob = new Blob(chunksRef.current, { type: mediaRecorder.mimeType });
         if (blob.size === 0) return;
 
         setIsTranscribing(true);
         try {
-          // Convert webm → WAV using AudioContext for Whisper compatibility
+          // Convert recorded audio → WAV using AudioContext for Whisper compatibility
           const arrayBuf = await blob.arrayBuffer();
           const audioCtx = new AudioContext({ sampleRate: 16000 });
           const decoded = await audioCtx.decodeAudioData(arrayBuf);
@@ -170,19 +201,7 @@ export function ChatInput({ onSend, disabled, className, value: externalValue, o
           if (result.error) {
             console.error("Transcription error:", result.error);
           } else if (result.transcription) {
-            // Append transcribed text to the input
-            setText((prev) => {
-              const sep = prev.trim() ? " " : "";
-              return prev + sep + result.transcription;
-            });
-            // Auto-resize textarea
-            setTimeout(() => {
-              if (textareaRef.current) {
-                textareaRef.current.style.height = "auto";
-                textareaRef.current.style.height =
-                  Math.min(textareaRef.current.scrollHeight, 160) + "px";
-              }
-            }, 0);
+            updateText(result.transcription);
           }
           await audioCtx.close();
         } catch (err) {
@@ -193,13 +212,14 @@ export function ChatInput({ onSend, disabled, className, value: externalValue, o
         }
       };
 
-      mediaRecorder.start();
+      mediaRecorder.start(250); // collect data every 250ms for reliability
       mediaRecorderRef.current = mediaRecorder;
       setIsRecording(true);
     } catch (err) {
       console.error("Mic access denied:", err);
+      alert("Microphone access was denied. Please allow microphone access and try again.");
     }
-  }, []);
+  }, [updateText]);
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {

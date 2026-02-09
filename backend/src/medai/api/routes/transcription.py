@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import base64
 import io
+import os
 import tempfile
 import time
 
@@ -25,14 +26,16 @@ router = APIRouter(tags=["transcription"])
 
 _whisper_model = None
 
+WHISPER_MODEL_SIZE = os.getenv("WHISPER_MODEL_SIZE", "base")
+
 
 def _get_model():
     global _whisper_model
     if _whisper_model is None:
-        logger.info("loading_whisper_model", model_size="base")
-        import whisper
+        logger.info("loading_whisper_model", model_size=WHISPER_MODEL_SIZE)
+        import whisper  # type: ignore[import-untyped]
 
-        _whisper_model = whisper.load_model("base")
+        _whisper_model = whisper.load_model(WHISPER_MODEL_SIZE)
         logger.info("whisper_model_loaded")
     return _whisper_model
 
@@ -50,6 +53,49 @@ class TranscribeResponse(BaseModel):
     error: str | None = None
 
 
+# ── Helpers ───────────────────────────────────────────────────
+
+def _decode_audio(audio_bytes: bytes) -> tuple[np.ndarray, int]:
+    """Decode WAV bytes → (float32 ndarray, sample_rate).
+
+    Falls back to raw 16-bit PCM at 16 kHz if WAV header parsing fails.
+    """
+    from scipy.io import wavfile as scipy_wav  # type: ignore[import-untyped]
+
+    buf = io.BytesIO(audio_bytes)
+    try:
+        sr, data = scipy_wav.read(buf)
+    except Exception:
+        # Fallback: treat as raw 16-bit little-endian PCM at 16 kHz
+        sr = 16000
+        data = np.frombuffer(audio_bytes, dtype=np.int16)
+
+    # → float32
+    if data.dtype == np.int16:
+        audio = data.astype(np.float32) / 32768.0
+    elif data.dtype == np.int32:
+        audio = data.astype(np.float32) / 2_147_483_648.0
+    else:
+        audio = data.astype(np.float32)
+
+    # → mono
+    if audio.ndim > 1:
+        audio = audio.mean(axis=1)
+
+    return audio, sr
+
+
+def _resample_if_needed(audio: np.ndarray, sr: int, target_sr: int = 16000) -> np.ndarray:
+    """Resample audio to target_sr if necessary."""
+    if sr == target_sr:
+        return audio
+    import math
+    from scipy import signal as scipy_signal  # type: ignore[import-untyped]
+
+    gcd = math.gcd(sr, target_sr)
+    return scipy_signal.resample_poly(audio, target_sr // gcd, sr // gcd).astype(np.float32)
+
+
 # ── Route ─────────────────────────────────────────────────────
 
 @router.post("/transcribe", response_model=TranscribeResponse)
@@ -60,48 +106,55 @@ async def transcribe_audio(req: TranscribeRequest):
         raw_b64 = req.audio_base64
         if "," in raw_b64:
             raw_b64 = raw_b64.split(",", 1)[1]
-        audio_bytes = base64.b64decode(raw_b64)
+
+        # Strip whitespace / newlines that might come from chunked encoding
+        raw_b64 = raw_b64.strip()
+
+        try:
+            audio_bytes = base64.b64decode(raw_b64)
+        except Exception as b64_err:
+            logger.error("base64_decode_failed", error=str(b64_err))
+            return TranscribeResponse(
+                transcription="",
+                duration_seconds=0.0,
+                error=f"Invalid base64 audio data: {b64_err}",
+            )
+
+        if len(audio_bytes) < 44:
+            return TranscribeResponse(
+                transcription="",
+                duration_seconds=0.0,
+                error="Audio data too short (less than WAV header size).",
+            )
 
         # Decode WAV → float32 numpy array
-        from scipy.io import wavfile as scipy_wav
+        audio, sr = _decode_audio(audio_bytes)
 
-        buf = io.BytesIO(audio_bytes)
-        try:
-            sr, data = scipy_wav.read(buf)
-        except Exception:
-            # Fallback: assume raw 16-bit PCM at 16kHz
-            sr = 16000
-            data = np.frombuffer(audio_bytes, dtype=np.int16)
-
-        # Convert to float32
-        if data.dtype == np.int16:
-            audio = data.astype(np.float32) / 32768.0
-        elif data.dtype == np.int32:
-            audio = data.astype(np.float32) / 2_147_483_648.0
-        else:
-            audio = data.astype(np.float32)
-
-        # Mono
-        if audio.ndim > 1:
-            audio = audio.mean(axis=1)
-
-        # Resample to 16kHz if needed (Whisper expects 16kHz)
-        if sr != 16000:
-            from scipy import signal as scipy_signal
-            import math
-
-            gcd = math.gcd(sr, 16000)
-            audio = scipy_signal.resample_poly(audio, 16000 // gcd, sr // gcd).astype(np.float32)
+        # Resample to 16 kHz (required by Whisper)
+        audio = _resample_if_needed(audio, sr)
 
         duration = len(audio) / 16000.0
+        if duration < 0.1:
+            return TranscribeResponse(
+                transcription="",
+                duration_seconds=round(duration, 2),
+                error="Audio is too short to transcribe.",
+            )
+
         logger.info("transcribe_request", duration_s=round(duration, 1), sr=sr)
 
         # Transcribe with Whisper
         model = _get_model()
         t0 = time.time()
 
-        # Write to temp file since whisper.transcribe accepts path or ndarray
-        result = model.transcribe(audio, language=req.language, fp16=False)
+        result = model.transcribe(
+            audio,
+            language=req.language,
+            fp16=False,
+            no_speech_threshold=0.6,
+            logprob_threshold=-1.0,
+            condition_on_previous_text=True,
+        )
         elapsed = time.time() - t0
 
         text = result.get("text", "").strip()
@@ -117,7 +170,7 @@ async def transcribe_audio(req: TranscribeRequest):
         )
 
     except Exception as exc:
-        logger.error("transcribe_error", error=str(exc))
+        logger.error("transcribe_error", error=str(exc), exc_info=True)
         return TranscribeResponse(
             transcription="",
             duration_seconds=0.0,
