@@ -1,6 +1,6 @@
 <div align="center">
 
-# MedAI — Agentic Medical AI Assistant
+# Medical-AI — Agentic Medical AI Assistant
 
 **End-to-end medical AI platform with Claude orchestration, MedGemma specialist models, and explainable AI reports.**
 
@@ -40,7 +40,7 @@ Built for the [**MedGemma Impact Challenge**](https://www.kaggle.com/competition
 
 ## Overview
 
-MedAI is a **multi-agent medical AI assistant** that combines a Claude Sonnet 4 orchestrator with specialized Google medical models (MedGemma, MedSigLIP, HeAR) to analyze medical images, audio, and clinical text. The platform produces **explainable, structured reports** with heatmap visualizations and a built-in judge for cross-modal consensus validation.
+Medical-AI is a **multi-agent medical AI assistant** that combines a Claude Sonnet 4 orchestrator with specialized Google medical models (MedGemma, MedSigLIP, HeAR) to analyze medical images, audio, and clinical text. The platform produces **explainable, structured reports** with heatmap visualizations and a built-in judge for cross-modal consensus validation.
 
 **Key capabilities:**
 - **Medical image analysis** — X-rays, CT, MRI, dermatology, fundus, histopathology via MedGemma 4B
@@ -140,8 +140,8 @@ These steps assume a fresh machine. Follow them in order.
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/ArseniiStratiuk/MedAI.git
-cd MedAI
+git clone https://github.com/ArseniiStratiuk/Medical-AI.git
+cd Medical-AI
 ```
 
 ### Step 2: Set Up the Backend (Python)
@@ -367,7 +367,7 @@ After deployment, Modal prints endpoint URLs. Copy them into `backend/.env`.
 ## Project Structure
 
 ```
-MedAI/
+Medical-AI/
 ├── backend/                    # FastAPI backend
 │   ├── src/medai/
 │   │   ├── main.py             # App factory, route registration
